@@ -149,6 +149,7 @@ class ExactCover(object):
         c = self.root.choose_column()
         c.cover()
         for r in c.down_siblings():
+            # TODO: get a row index
             row = sorted(d.column.name for d in r.row_data())
             if len(self.solution) > level:
                 if self.solution[level] != row:
@@ -320,5 +321,5 @@ if __name__ == '__main__':
     mat = ExactCover(matrix)
     print 'Matrix =\n', mat.root, '\n'
     for solution in mat.solve():
-        print 'Solutions:\n', solution, '\n'
+        print 'Solutions:\n', sorted(solution), '\n'
     print mat.num_searches, 'searches'
