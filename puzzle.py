@@ -24,11 +24,27 @@ flip   = False
 # flag enables rotation or not
 rotate = False
 
-class Puzzle():
+class Tile():
 
     """
-    A puzzle class
+    A tile class for each tile of various shapes.
     """
 
-    def __init__(self):
-        self.name = ''
+    # coordinates is a list of lists holding all coordinates of the given tile.
+    def __init__(self, coordinates):
+        """
+        Initialize the coordinates of current tile and auxiliary variables.
+        """
+        self.coords = coordinates
+        self.horizon = 0
+        self.vertical = 0
+
+    # bdcoor is the coordinates of the board.
+    def fit(self, bdcoor):
+        """
+        Check if the tile fits into the board.
+        """
+        for idx in range( len(self.coords) ):
+            if self.coords[idx] not in bdcoor:
+                return False
+        return True
