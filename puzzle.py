@@ -18,6 +18,7 @@
 # on the board and an equivalence detector detects the equivalent blocks after
 # flipping and rotation.
 
+from copy import deepcopy
 
 class Tile():
 
@@ -45,29 +46,73 @@ class Tile():
         """
         Generate all the flipped and rotated variation of this tile.
         """
+        # generate a meta matrix from the original tile
+        rows = max([row[0] for row in self.origCoords]) + 1
+        cols = max([col[1] for col in self.origCoords]) + 1
+        metaMatrix = [[0] * cols for i in range(rows)]
+        for row in self.origCoords:
+            metaMatrix[row[0]][row[1]] = 1
+        print 'orignial meta matrix', metaMatrix
 
         if self.FLIP:
             print 'flip enabled'
-        if self.ROTATE:
-            print 'rotate enabled'
-            # generate a meta matrix from the original tile
-            rows = max([row[0] for row in self.origCoords]) + 1
-            cols = max([col[1] for col in self.origCoords]) + 1
-            metaMatrix = [[0] * cols for i in range(rows)]
-            for row in self.origCoords:
-                metaMatrix[row[0]][row[1]] = 1
-            print metaMatrix
-            # rotate 90 degrees clockwise (absolute)
-            metaMatrix = [list(r) for r in zip(*metaMatrix[::-1])]
-            print metaMatrix
-            # construct new rotated coordinates
+            metaflip = deepcopy(metaMatrix)
+            # horizontal flip
+            newmeta = [row[::-1] for row in metaflip]
+            print 'horizontal flipped meta matrix', newmeta
             newcoord = []
             for r in range(rows):
                 for c in range(cols):
-                    if metaMatrix[r][c]:
+                    if newmeta[r][c]:
                         newcoord.append([r, c])
-            print newcoord
-            # TODO: need to detect equivalence with existing coordinates
+            print 'horizontal flipped coords', newcoord
+            # detect equivalence with existing coordinates
+            if sorted(newcoord) not in sorted(self.fliprotCoords):
+                print 'new coordinates not in fliprotCoords, append'
+                self.fliprotCoords.append(newcoord)
+            else:
+                print 'new coordinates already in fliprotCoords, omit'
+            # vertical flip
+            # rotate 90 degrees clockwise
+            newmeta = [list(r) for r in zip(*metaflip[::-1])]
+            # horizontal flip
+            newmeta = [row[::-1] for row in newmeta]
+            # rotate 90 degrees counter-clockwise
+            newmeta = [list(r) for r in zip(*newmeta)[::-1]]
+            print 'vertical flipped meta matrix', newmeta
+            newcoord = []
+            for r in range(rows):
+                for c in range(cols):
+                    if newmeta[r][c]:
+                        newcoord.append([r, c])
+            print 'vertical flipped coords', newcoord
+            # detect equivalence with existing coordinates
+            if sorted(newcoord) not in sorted(self.fliprotCoords):
+                print 'new coordinates not in fliprotCoords, append'
+                self.fliprotCoords.append(newcoord)
+            else:
+                print 'new coordinates already in fliprotCoords, omit'
+
+        if self.ROTATE:
+            print 'rotate enabled'
+            metarot = deepcopy(metaMatrix)
+            for _ in range(3):
+                # rotate 90 degrees clockwise
+                metarot = [list(r) for r in zip(*metarot[::-1])]
+                print 'rotated 90 matrix', metarot
+                # construct new rotated coordinates
+                newcoord = []
+                for r in range(rows):
+                    for c in range(cols):
+                        if metarot[r][c]:
+                            newcoord.append([r, c])
+                print 'rotated coords', newcoord
+                # detect equivalence with existing coordinates
+                if sorted(newcoord) not in sorted(self.fliprotCoords):
+                    print 'new coordinates not in fliprotCoords, append'
+                    self.fliprotCoords.append(newcoord)
+                else:
+                    print 'new coordinates already in fliprotCoords, omit'
 
     def fit(self, tilecoor, bdcoor):
         """
