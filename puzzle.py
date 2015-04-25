@@ -19,32 +19,66 @@
 # flipping and rotation.
 
 
-# flag enables flipping or not
-flip   = False
-# flag enables rotation or not
-rotate = False
-
 class Tile():
 
     """
     A tile class for each tile of various shapes.
     """
 
-    # coordinates is a list of lists holding all coordinates of the given tile.
-    def __init__(self, coordinates):
+    def __init__(self, coordinates, FLIP=False, ROTATE=False):
         """
         Initialize the coordinates of current tile and auxiliary variables.
         """
-        self.coords = coordinates
+        # contain the original tile
+        self.origCoords = coordinates
+        # contain the original tile and flipped and rotated variation.
+        self.fliprotCoords = []
+        self.fliprotCoords.append(self.origCoords)
+        # contain all the possible positions of the tile
+        self.availCoords = []
         self.horizon = 0
         self.vertical = 0
+        self.FLIP = FLIP
+        self.ROTATE = ROTATE
 
-    # bdcoor is the coordinates of the board.
-    def fit(self, bdcoor):
+    def fliprotate(self):
+        """
+        Generate all the flipped and rotated variation of this tile.
+        """
+
+        if self.FLIP:
+            print 'flip enabled'
+        if self.ROTATE:
+            print 'rotate enabled'
+            # generate a meta matrix from the original tile
+            rows = max([row[0] for row in self.origCoords]) + 1
+            cols = max([col[1] for col in self.origCoords]) + 1
+            metaMatrix = [[0] * cols for i in range(rows)]
+            for row in self.origCoords:
+                metaMatrix[row[0]][row[1]] = 1
+            print metaMatrix
+            # rotate 90 degrees clockwise (absolute)
+            metaMatrix = [list(r) for r in zip(*metaMatrix[::-1])]
+            print metaMatrix
+            # construct new rotated coordinates
+            newcoord = []
+            for r in range(rows):
+                for c in range(cols):
+                    if metaMatrix[r][c]:
+                        newcoord.append([r, c])
+            print newcoord
+            # TODO: need to detect equivalence with existing coordinates
+
+    def fit(self, tilecoor, bdcoor):
         """
         Check if the tile fits into the board.
         """
-        for idx in range( len(self.coords) ):
-            if self.coords[idx] not in bdcoor:
+        for idx in range( len(tilecoor) ):
+            if self.tilecoor[idx] not in bdcoor:
                 return False
         return True
+
+    def place(self, bdcoor):
+        """
+        Enumerate all the available placements.
+        """
