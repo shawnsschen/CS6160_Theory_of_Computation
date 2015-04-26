@@ -1,7 +1,10 @@
 import dlx
 import puzzle
+import parser
 
 if __name__ == '__main__':
+    origPuzzle = parser.Parser('IQcreator.txt')
+    """
     bset = []
     b0 = [[0,0],[1,0],[1,1]]
     bset.append(b0)
@@ -12,9 +15,12 @@ if __name__ == '__main__':
     board = [[0,0],[0,1],[0,2],
              [1,0],[1,1],[1,2],
              [2,0],[2,1],[2,2]]
+    """
+    bset = origPuzzle.search()
+    board = origPuzzle.board
     bdcols = max([col[1] for col in board]) + 1
     # tile = puzzle.Tile(newtile, True, True)
-    tiles = [puzzle.Tile(b) for b in bset]
+    tiles = [puzzle.Tile(b, True, True) for b in bset]
     rows = 0
     cols = 0
     for tile in tiles:
