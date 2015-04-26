@@ -119,7 +119,7 @@ class Tile():
         Check if the tile fits into the board.
         """
         for idx in range( len(tilecoor) ):
-            if self.tilecoor[idx] not in bdcoor:
+            if tilecoor[idx] not in bdcoor:
                 return False
         return True
 
@@ -127,3 +127,26 @@ class Tile():
         """
         Enumerate all the available placements.
         """
+        # calculate rows and columns of the board
+        rows = max([row[0] for row in bdcoor]) + 1
+        cols = max([col[1] for col in bdcoor]) + 1
+        # achieve all the flip and rotate combinations
+        self.fliprotate()
+        # iterate over all combinations and achieve all placements
+        for tilecoor in self.fliprotCoords:
+            print 'tilecoor: ', tilecoor
+            for vertical in range(rows):
+                for horizon in range(cols):
+                    newcoord = deepcopy(tilecoor)
+                    tmpcoord = []
+                    for r in newcoord:
+                        r[0] += vertical
+                        r[1] += horizon
+                        tmpcoord.append(r)
+                    print tmpcoord
+                    # append if current placement fits the board
+                    if self.fit(tmpcoord, bdcoor):
+                        self.availCoords.append(tmpcoord)
+                        print 'True, append'
+                    else:
+                        print 'False, omit'
