@@ -38,7 +38,10 @@ if __name__ == '__main__':
             for pair in coords:
                 colidx = pair[0] * bdcols + pair[1] + len(tiles)
                 coverMatrix[rowidx][colidx] = 1
-    coverMatrix = ['B0 B1 B2 N00 N01 N02 N10 N11 N12 N20 N21 N22'.split()] + coverMatrix
+    # create a name row
+    namerow = ['B'+`n` for n in range(len(tiles))]
+    namerow += ['N'+`pair[0]`+`pair[1]` for pair in board]
+    coverMatrix = [namerow] + coverMatrix
 
     mat = dlx.ExactCover(coverMatrix)
     print 'Matrix =\n', mat.root, '\n'
