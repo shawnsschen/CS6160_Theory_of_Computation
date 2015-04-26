@@ -143,10 +143,7 @@ class Tile():
                         r[0] += vertical
                         r[1] += horizon
                         tmpcoord.append(r)
-                    print tmpcoord
                     # append if current placement fits the board
                     if self.fit(tmpcoord, bdcoor):
                         self.availCoords.append(tmpcoord)
-                        print 'True, append'
-                    else:
-                        print 'False, omit'
+                        print 'Avail placement', tmpcoord
