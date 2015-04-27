@@ -60,6 +60,8 @@ class Tile():
             # horizontal flip
             newmeta = [row[::-1] for row in metaflip]
             print 'horizontal flipped meta matrix', newmeta
+            rows = len(metaflip)
+            cols = len(metaflip[0])
             newcoord = []
             for r in range(rows):
                 for c in range(cols):
@@ -80,6 +82,8 @@ class Tile():
             # rotate 90 degrees counter-clockwise
             newmeta = [list(r) for r in zip(*newmeta)[::-1]]
             print 'vertical flipped meta matrix', newmeta
+            rows = len(metaflip)
+            cols = len(metaflip[0])
             newcoord = []
             for r in range(rows):
                 for c in range(cols):
@@ -100,6 +104,8 @@ class Tile():
                 # rotate 90 degrees clockwise
                 metarot = [list(r) for r in zip(*metarot[::-1])]
                 print 'rotated 90 matrix', metarot
+                rows = len(metarot)
+                cols = len(metarot[0])
                 # construct new rotated coordinates
                 newcoord = []
                 for r in range(rows):

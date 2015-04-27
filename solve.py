@@ -3,7 +3,7 @@ import puzzle
 import parser
 
 if __name__ == '__main__':
-    origPuzzle = parser.Parser('puzzle_inputs/IQcreator.txt')
+    origPuzzle = parser.Parser('puzzle_inputs/pentomino.txt')
     """
     bset = []
     b0 = [[0,0],[1,0],[1,1]]
@@ -19,8 +19,8 @@ if __name__ == '__main__':
     bset = origPuzzle.search()
     board = origPuzzle.board
     bdcols = max([col[1] for col in board]) + 1
-    #tiles = [puzzle.Tile(b, True, True) for b in bset]
-    tiles = [puzzle.Tile(b) for b in bset]
+    tiles = [puzzle.Tile(b, True, True) for b in bset]
+    #tiles = [puzzle.Tile(b) for b in bset]
     rows = 0
     cols = 0
     for tile in tiles:
