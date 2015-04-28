@@ -16,6 +16,7 @@
 # Converts the output of solutions into a graphically equivalent matrix.
 
 from copy import deepcopy
+import numpy as np
 
 class Graph():
 
@@ -30,7 +31,7 @@ class Graph():
         self.gMat = [[0] * cols for i in range(rows)]
         for blk in solution:
             newblk = deepcopy(blk)
-            blkname = int(newblk[0].replace('B', ''))
+            blkname = int(newblk[0].replace('B', '')) + 1
             newblk.remove(newblk[0])
             for point in newblk:
                 point = point.replace('N', '')
@@ -42,3 +43,11 @@ class Graph():
         Generates a graph using the gMat matrix.
         """
         return self.gMat
+
+    def normGen(self):
+        """
+        Generates a normalized graph using the gMat matrix.
+        """
+        a = np.array(self.gMat)
+        a = a.astype(float) / np.amax(a)
+        return a
