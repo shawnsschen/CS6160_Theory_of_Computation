@@ -1,9 +1,10 @@
 import dlx
+import graphic
 import puzzle
 import parser
 
 if __name__ == '__main__':
-    origPuzzle = parser.Parser('puzzle_inputs/pentomino.txt')
+    origPuzzle = parser.Parser('puzzle_inputs/pentominoes5x12.txt')
     """
     bset = []
     b0 = [[0,0],[1,0],[1,1]]
@@ -18,6 +19,7 @@ if __name__ == '__main__':
     """
     bset = origPuzzle.search()
     board = origPuzzle.board
+    bdrows = max([row[0] for row in board]) + 1
     bdcols = max([col[1] for col in board]) + 1
     tiles = [puzzle.Tile(b, True, True) for b in bset]
     #tiles = [puzzle.Tile(b) for b in bset]
@@ -30,8 +32,6 @@ if __name__ == '__main__':
         print '\n'
         print '\n'
     cols = len(tiles) + len(board)
-    print 'Cols', cols
-    print 'Rows', rows
     coverMatrix = [[0] * cols for i in range(rows)]
     for n, tile in zip(range(len(tiles)), tiles):
         rowbase = 0
@@ -46,10 +46,15 @@ if __name__ == '__main__':
                 coverMatrix[rowidx][colidx] = 1
     # create a name row
     namerow = ['B'+`n` for n in range(len(tiles))]
-    namerow += ['N'+`pair[0]`+`pair[1]` for pair in board]
+    namerow += ['N'+`pair[0]`+'_'+`pair[1]` for pair in board]
     coverMatrix = [namerow] + coverMatrix
 
     mat = dlx.ExactCover(coverMatrix)
-    for solution in mat.solve():
-        print 'Solutions:\n', sorted(solution), '\n'
+    solutions = mat.solve()
+    if not next(solutions, False):
+        print '---- No available solution ----'
+    for solution in solutions:
+        graph = graphic.Graph(bdrows, bdcols, solution)
+        print 'Solution:', graph.gen()
+        print '\n'
     print mat.num_searches, 'searches'
