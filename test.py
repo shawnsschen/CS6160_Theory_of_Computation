@@ -14,7 +14,10 @@ if __name__ == '__main__':
     puzzlename = inputpath.split('/')[-1].split('.')[0]
     outputpath = os.getcwd() + '/results/' + puzzlename
 
+    start = time.time()
     solve.solve(inputpath, FLIP, ROTATE)
+    end = time.time()
+    print 'Total time: ', end - start
     """
     #proc = multiprocessing.Process(target=solve.solve, args=(inputpath, FLIP, ROTATE))
     proc = threading.Thread(target=solve.solve, args=(inputpath, FLIP, ROTATE))
