@@ -47,7 +47,8 @@ def solve(inputpath, FLIP, ROTATE):
         print '\n'
     cols = len(tiles) + len(board)
     coverMatrix = [[0] * cols for i in range(rows)]
-    for n, tile in zip(range(len(tiles)), tiles):
+    for tile in tiles:
+        n = tiles.index(tile)
         rowbase = 0
         for i in range(n):
             rowbase += len(tiles[i].availCoords)
