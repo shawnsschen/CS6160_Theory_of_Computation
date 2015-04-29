@@ -1,20 +1,28 @@
-import graphic
+import solve
+import easygui
+import os
+import threading
+import multiprocessing
+import time
 
 if __name__ == '__main__':
-    solution = [['B4', 'N0_2', 'N1_1', 'N1_2', 'N1_3', 'N2_2'],
-                ['B5', 'N0_0', 'N0_1', 'N1_0', 'N2_0', 'N2_1'],
-                ['B6', 'N0_3', 'N0_4', 'N0_5', 'N0_6', 'N0_7'],
-                ['B9', 'N1_4', 'N2_3', 'N2_4', 'N2_5', 'N3_5'],
-                ['B2', 'N1_5', 'N1_6', 'N1_7', 'N2_7', 'N3_7'],
-                ['B1', 'N2_6', 'N3_6', 'N4_5', 'N4_6', 'N4_7'],
-                ['B10', 'N5_6', 'N5_7', 'N6_6', 'N6_7', 'N7_7'],
-                ['B11', 'N5_4', 'N5_5', 'N6_5', 'N7_5', 'N7_6'],
-                ['B3', 'N5_2', 'N5_3', 'N6_3', 'N6_4', 'N7_4'],
-                ['B8', 'N3_2', 'N4_1', 'N4_2', 'N5_1', 'N6_1'],
-                ['B0', 'N6_2', 'N7_0', 'N7_1', 'N7_2', 'N7_3'],
-                ['B7', 'N3_0', 'N3_1', 'N4_0', 'N5_0', 'N6_0']]
-    bdrows = 8
-    bdcols = 8
-    graph = graphic.Graph(bdrows, bdcols, solution)
-    newflsol = graph.normGen()
-    print newflsol
+    FLIP = True
+    ROTATE = True
+    choice = easygui.ccbox(msg='Start solving puzzle?\nChoose a puzzle first.', title='Puzzle Solver v1.0', choices=('Continue', 'Cancel'), image=None)
+    if choice:
+        inputpath = easygui.fileopenbox(title='Choose a puzzle', default=None, filetypes=['*.txt'])
+    puzzlename = inputpath.split('/')[-1].split('.')[0]
+    outputpath = os.getcwd() + '/results/' + puzzlename
+
+    solve.solve(inputpath, FLIP, ROTATE)
+    """
+    #proc = multiprocessing.Process(target=solve.solve, args=(inputpath, FLIP, ROTATE))
+    proc = threading.Thread(target=solve.solve, args=(inputpath, FLIP, ROTATE))
+    proc.start()
+    time.sleep(3)
+    if os.path.exists(outputpath) and os.listdir(outputpath):
+        easygui.msgbox("pic generated")
+    else:
+        easygui.msgbox("nothing found")
+    #proc.terminate()
+    """

@@ -3,14 +3,40 @@ import graphic
 import puzzle
 import parser
 
-if __name__ == '__main__':
-    origPuzzle = parser.Parser('puzzle_inputs/pentominoes8x8_middle_missing.txt')
+import matplotlib.pylab as plt
+import os
+
+
+def savepic(mat, maxscale, picname):
+    fig = plt.matshow(mat, vmin=0, vmax=maxscale)
+    plt.axis('off')
+    fig.axes.get_xaxis().set_visible(False)
+    fig.axes.get_yaxis().set_visible(False)
+    plt.savefig(picname, bbox_inches='tight', pad_inches = 0, dpi=100)
+    plt.close()
+
+def fliprot(sol):
+    # horizontal flip
+    horisol = [row[::-1] for row in sol]
+    # vertical flip
+    # rotate 90 degrees clockwise
+    vertsol = [list(r) for r in zip(*sol[::-1])]
+    # horizontal flip
+    vertsol = [row[::-1] for row in vertsol]
+    # rotate 90 degrees counter-clockwise
+    vertsol = [list(r) for r in zip(*vertsol)[::-1]]
+    return [sol, horisol, vertsol]
+
+def solve(inputpath, FLIP, ROTATE):
+    outputpath = 'results/' + inputpath.split('/')[-1].split('.')[0]
+    if not os.path.exists(outputpath):
+        os.makedirs(outputpath)
+    origPuzzle = parser.Parser(inputpath)
     bset = origPuzzle.search()
     board = origPuzzle.board
     bdrows = max([row[0] for row in board]) + 1
     bdcols = max([col[1] for col in board]) + 1
-    tiles = [puzzle.Tile(b, True, True) for b in bset]
-    #tiles = [puzzle.Tile(b) for b in bset]
+    tiles = [puzzle.Tile(b, FLIP, ROTATE) for b in bset]
     rows = 0
     cols = 0
     for tile in tiles:
@@ -46,17 +72,22 @@ if __name__ == '__main__':
     for solution in solutions:
         graph = graphic.Graph(bdrows, bdcols, solution)
         newsol = graph.gen()
+        newsolFR = fliprot(newsol)
         isIndep = True
-        for _ in range(4):
-            if newsol in indepSol:
-                isIndep = False
-                break
-            # rotate solution matrix 90 degrees clockwise
-            newsol = [list(r) for r in zip(*newsol[::-1])]
+        for nsol in newsolFR:
+            for _ in range(4):
+                if nsol in indepSol:
+                    isIndep = False
+                    break
+                # rotate solution matrix 90 degrees clockwise
+                nsol = [list(r) for r in zip(*nsol[::-1])]
         if isIndep:
             indepSol.append(newsol)
             solcnt += 1
+            maxscale = max([max(m) for m in newsol])
             print 'Solution:', newsol
             print '\n'
+            picname = outputpath + '/' + str(solcnt) + '.png'
+            savepic(newsol, maxscale, picname)
     print 'found', solcnt, 'independent solutions'
     print mat.num_searches, 'searches'

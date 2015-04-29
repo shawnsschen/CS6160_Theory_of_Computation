@@ -55,10 +55,13 @@ class Tile():
         print 'orignial meta matrix', metaMatrix
 
         if self.FLIP:
-            print 'flip enabled'
+            metaflipset = []
+            print 'FLIP enabled'
             metaflip = deepcopy(metaMatrix)
+            metaflipset.append(metaflip)
             # horizontal flip
             newmeta = [row[::-1] for row in metaflip]
+            metaflipset.append(newmeta)
             print 'horizontal flipped meta matrix', newmeta
             rows = len(metaflip)
             cols = len(metaflip[0])
@@ -81,6 +84,7 @@ class Tile():
             newmeta = [row[::-1] for row in newmeta]
             # rotate 90 degrees counter-clockwise
             newmeta = [list(r) for r in zip(*newmeta)[::-1]]
+            metaflipset.append(newmeta)
             print 'vertical flipped meta matrix', newmeta
             rows = len(metaflip)
             cols = len(metaflip[0])
@@ -98,27 +102,28 @@ class Tile():
                 print 'new coordinates already in fliprotCoords, omit'
 
         if self.ROTATE:
-            print 'rotate enabled'
-            metarot = deepcopy(metaMatrix)
-            for _ in range(3):
-                # rotate 90 degrees clockwise
-                metarot = [list(r) for r in zip(*metarot[::-1])]
-                print 'rotated 90 matrix', metarot
-                rows = len(metarot)
-                cols = len(metarot[0])
-                # construct new rotated coordinates
-                newcoord = []
-                for r in range(rows):
-                    for c in range(cols):
-                        if metarot[r][c]:
-                            newcoord.append([r, c])
-                print 'rotated coords', newcoord
-                # detect equivalence with existing coordinates
-                if sorted(newcoord) not in sorted(self.fliprotCoords):
-                    print 'new coordinates not in fliprotCoords, append'
-                    self.fliprotCoords.append(newcoord)
-                else:
-                    print 'new coordinates already in fliprotCoords, omit'
+            print 'ROTATE enabled'
+            #metarot = deepcopy(metaMatrix)
+            for metarot in metaflipset:
+                for _ in range(3):
+                    # rotate 90 degrees clockwise
+                    metarot = [list(r) for r in zip(*metarot[::-1])]
+                    print 'rotated 90 matrix', metarot
+                    rows = len(metarot)
+                    cols = len(metarot[0])
+                    # construct new rotated coordinates
+                    newcoord = []
+                    for r in range(rows):
+                        for c in range(cols):
+                            if metarot[r][c]:
+                                newcoord.append([r, c])
+                    print 'rotated coords', newcoord
+                    # detect equivalence with existing coordinates
+                    if sorted(newcoord) not in sorted(self.fliprotCoords):
+                        print 'new coordinates not in fliprotCoords, append'
+                        self.fliprotCoords.append(newcoord)
+                    else:
+                        print 'new coordinates already in fliprotCoords, omit'
 
     def fit(self, tilecoor, bdcoor):
         """
@@ -140,7 +145,7 @@ class Tile():
         self.fliprotate()
         # iterate over all combinations and achieve all placements
         for tilecoor in self.fliprotCoords:
-            print 'tilecoor: ', tilecoor
+            print 'tile coords: ', tilecoor
             for vertical in range(rows):
                 for horizon in range(cols):
                     newcoord = deepcopy(tilecoor)
