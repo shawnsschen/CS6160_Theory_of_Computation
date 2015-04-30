@@ -148,7 +148,7 @@ class ExactCover(object):
         self.num_searches += 1
         c = self.root.choose_column()
         c.cover()
-        for r in c.down_siblings():
+        for r in c.downNeighbors():
             # TODO: get a row index
             row = sorted(d.column.name for d in r.row_data())
             if len(self.solution) > level:
@@ -157,12 +157,12 @@ class ExactCover(object):
                     continue
             else:
                 self.solution.append(row)
-            for j in r.right_siblings():
+            for j in r.rightNeighbors():
                 j.column.cover()
             for solution in self.solve(level+1):
                 yield solution
             self.solution.pop()
-            for j in r.left_siblings():
+            for j in r.leftNeighbors():
                 j.column.uncover()
         c.uncover()
 
@@ -186,9 +186,9 @@ class Node(object):
 
     def row_data(self):
         """Return a list of all nodes on this row, including this node."""
-        return [self] + self.right_siblings()
+        return [self] + self.rightNeighbors()
 
-    def right_siblings(self):
+    def rightNeighbors(self):
         """Return a list of all rightward siblings of this node."""
         next = self.right
         sibs = []
@@ -197,7 +197,7 @@ class Node(object):
             next = next.right
         return sibs
 
-    def left_siblings(self):
+    def leftNeighbors(self):
         """Return a list of all leftward siblings of this node."""
         next = self.left
         sibs = []
@@ -206,7 +206,7 @@ class Node(object):
             next = next.left
         return sibs
 
-    def down_siblings(self):
+    def downNeighbors(self):
         """Return a list of all downward siblings of this node."""
         next = self.down
         sibs = []
@@ -215,7 +215,7 @@ class Node(object):
             next = next.down
         return sibs
 
-    def up_siblings(self):
+    def upNeighbors(self):
         """Return a list of all upward siblings of this node."""
         next = self.up
         sibs = []
@@ -242,15 +242,15 @@ class Column(Node):
     def cover(self):
         self.right.left = self.left
         self.left.right = self.right
-        for i in self.down_siblings():
-            for j in i.right_siblings():
+        for i in self.downNeighbors():
+            for j in i.rightNeighbors():
                 j.down.up = j.up
                 j.up.down = j.down
                 j.column.size -= 1
 
     def uncover(self):
-        for i in self.up_siblings():
-            for j in i.left_siblings():
+        for i in self.upNeighbors():
+            for j in i.leftNeighbors():
                 j.column.size += 1
                 j.down.up = j
                 j.up.down = j
@@ -281,14 +281,14 @@ class Root(Node):
         header = []
         columns = {}
         width = 0
-        for i, column in enumerate(self.right_siblings()):
+        for i, column in enumerate(self.rightNeighbors()):
             node = '%s/%s' % (column.name, column.size)
             header.append(node)
             width = max(width, len(node))
             columns[column] = i
         lines = [' '.join('%-*s' % (width, h) for h in header)]
-        for i, column in enumerate(self.right_siblings()):
-            for row in column.down_siblings():
+        for i, column in enumerate(self.rightNeighbors()):
+            for row in column.downNeighbors():
                 if row in seen:
                     continue
                 line = []
@@ -305,5 +305,5 @@ class Root(Node):
 
     def choose_column(self):
         size, column = min((column.size, column)
-                           for column in self.right_siblings())
+                           for column in self.rightNeighbors())
         return column
