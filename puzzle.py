@@ -26,15 +26,19 @@ class Tile():
     A tile class for each tile of various shapes.
     """
 
-    def __init__(self, coordinates, FLIP=False, ROTATE=False):
+    def __init__(self, coordinates, pattern, FLIP=False, ROTATE=False):
         """
         Initialize the coordinates of current tile and auxiliary variables.
         """
         # contain the original tile
         self.origCoords = coordinates
+        self.origPattern = pattern
         # contain the original tile and flipped and rotated variation.
         self.fliprotCoords = []
         self.fliprotCoords.append(self.origCoords)
+        # contain the rotated and flipped patterns.
+        self.fliprotPatterns = []
+        self.fliprotPatterns.append(self.origPattern)
         # contain all the possible positions of the tile
         self.availCoords = []
         self.horizon = 0
@@ -50,80 +54,119 @@ class Tile():
         rows = max([row[0] for row in self.origCoords]) + 1
         cols = max([col[1] for col in self.origCoords]) + 1
         metaMatrix = [[0] * cols for i in range(rows)]
+        patternMatrix = [[' '] * cols for i in range(rows)]
         for row in self.origCoords:
             metaMatrix[row[0]][row[1]] = 1
+            patternMatrix[row[0]][row[1]] = self.origPattern[(row[0], row[1])]
         print 'orignial meta matrix', metaMatrix
+        print 'orignial pattern matrix', patternMatrix
 
         if self.FLIP:
             metaflipset = []
+            patternflipset = []
             print 'FLIP enabled'
             metaflip = deepcopy(metaMatrix)
+            patternflipMat = deepcopy(patternMatrix)
             metaflipset.append(metaflip)
+            patternflipset.append(patternflipMat)
             # horizontal flip
             newmeta = [row[::-1] for row in metaflip]
+            newpattMat = [row[::-1] for row in patternflipMat]
             metaflipset.append(newmeta)
+            patternflipset.append(newpattMat)
             print 'horizontal flipped meta matrix', newmeta
+            print 'horizontal flipped pattern matrix', newpattMat
             rows = len(metaflip)
             cols = len(metaflip[0])
             newcoord = []
+            newpattern = {}
             for r in range(rows):
                 for c in range(cols):
                     if newmeta[r][c]:
                         newcoord.append([r, c])
+                    if newpattMat[r][c] != ' ':
+                        newpattern[(r, c)] = newpattMat[r][c]
             print 'horizontal flipped coords', newcoord
+            print 'horizontal flipped patterns', newpattern
             # detect equivalence with existing coordinates
-            if sorted(newcoord) not in sorted(self.fliprotCoords):
+            if (sorted(newcoord) not in sorted(self.fliprotCoords) and
+                newpattern not in self.fliprotPatterns):
                 print 'new coordinates not in fliprotCoords, append'
+                print 'new pattern not in fliprotPatterns, append'
                 self.fliprotCoords.append(newcoord)
+                self.fliprotPatterns.append(newpattern)
             else:
                 print 'new coordinates already in fliprotCoords, omit'
+                print 'new pattern already in fliprotPatterns, omit'
             # vertical flip
             # rotate 90 degrees clockwise
             newmeta = [list(r) for r in zip(*metaflip[::-1])]
+            newpattMat = [list(r) for r in zip(*patternflipMat[::-1])]
             # horizontal flip
             newmeta = [row[::-1] for row in newmeta]
+            newpattMat = [row[::-1] for row in newpattMat]
             # rotate 90 degrees counter-clockwise
             newmeta = [list(r) for r in zip(*newmeta)[::-1]]
+            newpattMat = [list(r) for r in zip(*newpattMat)[::-1]]
             metaflipset.append(newmeta)
+            patternflipset.append(newpattMat)
             print 'vertical flipped meta matrix', newmeta
+            print 'vertical flipped pattern matrix', newpattMat
             rows = len(metaflip)
             cols = len(metaflip[0])
             newcoord = []
+            newpattern = {}
             for r in range(rows):
                 for c in range(cols):
                     if newmeta[r][c]:
                         newcoord.append([r, c])
+                    if newpattMat[r][c] != ' ':
+                        newpattern[(r, c)] = newpattMat[r][c]
             print 'vertical flipped coords', newcoord
+            print 'vertical flipped patterns', newpattern
             # detect equivalence with existing coordinates
-            if sorted(newcoord) not in sorted(self.fliprotCoords):
+            if (sorted(newcoord) not in sorted(self.fliprotCoords) and
+                newpattern not in self.fliprotPatterns):
                 print 'new coordinates not in fliprotCoords, append'
+                print 'new pattern not in fliprotPatterns, append'
                 self.fliprotCoords.append(newcoord)
+                self.fliprotPatterns.append(newpattern)
             else:
                 print 'new coordinates already in fliprotCoords, omit'
+                print 'new pattern already in fliprotPatterns, omit'
 
         if self.ROTATE:
             print 'ROTATE enabled'
-            #metarot = deepcopy(metaMatrix)
-            for metarot in metaflipset:
+            for metarot, pattrot in zip(metaflipset, patternflipset):
                 for _ in range(3):
                     # rotate 90 degrees clockwise
                     metarot = [list(r) for r in zip(*metarot[::-1])]
-                    print 'rotated 90 matrix', metarot
+                    pattrot = [list(r) for r in zip(*pattrot[::-1])]
+                    print 'rotated 90 meta matrix', metarot
+                    print 'rotated 90 pattern matrix', pattrot
                     rows = len(metarot)
                     cols = len(metarot[0])
                     # construct new rotated coordinates
                     newcoord = []
+                    newpattern = {}
                     for r in range(rows):
                         for c in range(cols):
                             if metarot[r][c]:
                                 newcoord.append([r, c])
+                            if pattrot[r][c] != ' ':
+                                newpattern[(r, c)] = pattrot[r][c]
                     print 'rotated coords', newcoord
+                    print 'rotated pattern', newpattern
                     # detect equivalence with existing coordinates
-                    if sorted(newcoord) not in sorted(self.fliprotCoords):
+                    if (sorted(newcoord) not in sorted(self.fliprotCoords) and
+                        newpattern not in self.fliprotPatterns):
                         print 'new coordinates not in fliprotCoords, append'
+                        print 'new pattern not in fliprotPatterns, append'
                         self.fliprotCoords.append(newcoord)
+                        self.fliprotPatterns.append(newpattern)
                     else:
                         print 'new coordinates already in fliprotCoords, omit'
+                        print 'new pattern already in fliprotPatterns, omit'
 
     def fit(self, tilecoor, bdcoor):
         """

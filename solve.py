@@ -3,6 +3,7 @@ import graphic
 import puzzle
 import parser
 
+from copy import deepcopy
 import matplotlib.pylab as plt
 import os
 
@@ -27,16 +28,51 @@ def fliprot(sol):
     vertsol = [list(r) for r in zip(*vertsol)[::-1]]
     return [sol, horisol, vertsol]
 
+def patternmatch(sol, tiles, board, bpattern):
+    tmpsol = deepcopy(sol)
+    bdrows = max([row[0] for row in board]) + 1
+    bdcols = max([col[1] for col in board]) + 1
+    solMatrix = [[' '] * bdcols for i in range(bdrows)]
+    boardMatrix = deepcopy(solMatrix)
+    for s in tmpsol:
+        tileid = int(s[0].replace('B', ''))
+        s.remove(s[0])
+        tile = tiles[tileid]
+        tilecoord = []
+        for point in s:
+            point = point.replace('N', '')
+            coord = [int(i) for i in point.split('_')]
+            tilecoord.append(coord)
+        tilermin = min([row[0] for row in tilecoord])
+        tilecmin = min([col[1] for col in tilecoord])
+        rawtilecoor = deepcopy(tilecoord)
+        for r in tilecoord:
+            r[0] -= tilermin
+            r[1] -= tilecmin
+        if sorted(tilecoord) in tile.fliprotCoords:
+            idx = tile.fliprotCoords.index(sorted(tilecoord))
+            pattern = tile.fliprotPatterns[idx]
+            for pair in rawtilecoor:
+                val = pattern[(pair[0] - tilermin, pair[1] - tilecmin)]
+                solMatrix[pair[0]][pair[1]] = val
+    for r in range(bdrows):
+        for c in range(bdcols):
+            boardMatrix[r][c] = bpattern[(r, c)]
+    if solMatrix == boardMatrix:
+        return True
+    else:
+        return False
+
 def solve(inputpath, FLIP, ROTATE):
     outputpath = 'results/' + inputpath.split('/')[-1].split('.')[0]
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
     origPuzzle = parser.Parser(inputpath)
-    bset = origPuzzle.search()
+    bset, bpatterns = origPuzzle.search()
     board = origPuzzle.board
     bdrows = max([row[0] for row in board]) + 1
     bdcols = max([col[1] for col in board]) + 1
-    tiles = [puzzle.Tile(b, FLIP, ROTATE) for b in bset]
+    tiles = [puzzle.Tile(b, p, FLIP, ROTATE) for b, p in zip(bset, bpatterns)]
     rows = 0
     cols = 0
     for tile in tiles:
@@ -60,7 +96,7 @@ def solve(inputpath, FLIP, ROTATE):
                 colidx = board.index(pair) + len(tiles)
                 coverMatrix[rowidx][colidx] = 1
     # create a name row
-    namerow = ['B'+`n` for n in range(len(tiles))]
+    namerow = ['B'+`name` for name in range(len(tiles))]
     namerow += ['N'+`pair[0]`+'_'+`pair[1]` for pair in board]
     coverMatrix = [namerow] + coverMatrix
 
@@ -71,6 +107,9 @@ def solve(inputpath, FLIP, ROTATE):
         print '---- No available solution ----'
     solcnt = 0
     for solution in solutions:
+        match = patternmatch(solution, tiles, board, origPuzzle.bdpattern)
+        if not match:
+            continue
         graph = graphic.Graph(bdrows, bdcols, solution)
         newsol = graph.gen()
         newsolFR = fliprot(newsol)

@@ -30,6 +30,7 @@ class Parser():
         """
         self.inputMat = []
         f = open(filename, 'r')
+        # find how many columns the input has
         self.matcols = len(max(f, key=len))
         f.seek(0)
         for line in f:
@@ -63,53 +64,69 @@ class Parser():
                 neighbors.append([coord[0], coord[1] - 1])
         return neighbors
 
-    def align(self, coords):
+    def align(self, coords, pattern):
         """
-        Reset the top-left most coordinates to 0.
+        Reset the top-left most coordinates to 0 and adjust the
+        associated pattern.
         """
+        newpattern = {}
         minrow = min([row[0] for row in coords])
         mincol = min([row[1] for row in coords])
         for r in coords:
+            v = pattern[(r[0], r[1])]
             r[0] -= minrow
             r[1] -= mincol
-        return coords
+            newpattern[(r[0], r[1])] = v
+        return coords, newpattern
 
     def search(self):
         """
         Search the input matrix and find all the tiles.
         """
+        # all the discovered tiles
         self.tileset = []
+        # all the patterns associated with the tiles
+        self.patterns = []
         for row, rowidx in zip(self.inputMat, range(len(self.inputMat))):
             for col, colidx in zip(row, range(len(row))):
                 if self.inputMat[rowidx][colidx] == ' ':
                     continue
                 discover = []
                 unsearch = []
+                newpattern = {}
                 current = [rowidx, colidx]
                 firstpass = True
                 while firstpass or unsearch:
                     firstpass = False
                     if [current[0], current[1]] not in discover:
                         discover.append([current[0], current[1]])
+                        entryval = self.inputMat[current[0]][current[1]]
+                        newpattern[(current[0], current[1])] = entryval
                     if [current[0], current[1]] in unsearch:
                         unsearch.remove([current[0], current[1]])
                     self.inputMat[current[0]][current[1]] = ' '
                     # search around
                     surround = self.lookaround([current[0], current[1]])
-                    # if surround has no elements
+                    # if surround has elements
                     if surround:
                         for i in surround:
                             if i not in discover:
                                 discover.append(i)
+                                entryval = self.inputMat[i[0]][i[1]]
+                                newpattern[(i[0], i[1])] = entryval
                             if i not in unsearch:
                                 unsearch.append(i)
                     if unsearch:
                         # fetch the first element in unsearch
                         current = [unsearch[0][0], unsearch[0][1]]
                     else:
-                        discover = self.align(discover)
+                        discover, newpattern = self.align(discover, newpattern)
                         self.tileset.append(sorted(discover))
+                        self.patterns.append(newpattern)
         # the largest tile is board
         self.board = max(self.tileset, key=len)
+        idx = self.tileset.index(self.board)
+        self.bdpattern = self.patterns[idx]
         self.tileset.remove(self.board)
-        return self.tileset
+        self.patterns.remove(self.patterns[idx])
+        return self.tileset, self.patterns
