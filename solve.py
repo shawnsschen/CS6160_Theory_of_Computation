@@ -57,7 +57,8 @@ def patternmatch(sol, tiles, board, bpattern):
                 solMatrix[pair[0]][pair[1]] = val
     for r in range(bdrows):
         for c in range(bdcols):
-            boardMatrix[r][c] = bpattern[(r, c)]
+            if (r, c) in bpattern:
+                boardMatrix[r][c] = bpattern[(r, c)]
     if solMatrix == boardMatrix:
         return True
     else:
