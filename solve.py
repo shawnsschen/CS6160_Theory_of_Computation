@@ -146,7 +146,10 @@ def solve(inputpath, FLIP, ROTATE):
                 maxscale = max([max(m) for m in newsol])
                 print 'Solution:', newsol
                 print '\n'
-                picname = outputpath + '/' + str(solcnt) + '.png'
+                if filename == 'partial_cross':
+                    picname = outputpath + '/' + str(partcnt+solcnt) + '.png'
+                else:
+                    picname = outputpath + '/' + str(solcnt) + '.png'
                 savepic(newsol, maxscale, picname)
         if filename == 'partial_cross':
             partcnt += solcnt
