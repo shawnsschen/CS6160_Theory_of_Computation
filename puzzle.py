@@ -57,6 +57,7 @@ class Tile():
         patternMatrix = [[' '] * cols for i in range(rows)]
         for row in self.origCoords:
             metaMatrix[row[0]][row[1]] = 1
+            print 'origPattern:', (row[0], row[1])
             patternMatrix[row[0]][row[1]] = self.origPattern[(row[0], row[1])]
         print 'orignial meta matrix', metaMatrix
         print 'orignial pattern matrix', patternMatrix

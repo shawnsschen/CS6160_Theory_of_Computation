@@ -1,5 +1,6 @@
 import dlx
 import graphic
+import itertools
 import puzzle
 import parser
 
@@ -65,7 +66,8 @@ def patternmatch(sol, tiles, board, bpattern):
         return False
 
 def solve(inputpath, FLIP, ROTATE):
-    outputpath = 'results/' + inputpath.split('/')[-1].split('.')[0]
+    filename = inputpath.split('/')[-1].split('.')[0]
+    outputpath = 'results/' + filename
     if not os.path.exists(outputpath):
         os.makedirs(outputpath)
     origPuzzle = parser.Parser(inputpath)
@@ -73,62 +75,83 @@ def solve(inputpath, FLIP, ROTATE):
     board = origPuzzle.board
     bdrows = max([row[0] for row in board]) + 1
     bdcols = max([col[1] for col in board]) + 1
-    tiles = [puzzle.Tile(b, p, FLIP, ROTATE) for b, p in zip(bset, bpatterns)]
-    rows = 0
-    cols = 0
-    for tile in tiles:
-        # find out all the possible tile placements
-        tile.place(board)
-        rows += len(tile.availCoords)
-        print '\n'
-        print '\n'
-    cols = len(tiles) + len(board)
-    coverMatrix = [[0] * cols for i in range(rows)]
-    for tile in tiles:
-        n = tiles.index(tile)
-        rowbase = 0
-        for i in range(n):
-            rowbase += len(tiles[i].availCoords)
-        tilerange = range(len(tile.availCoords))
-        for offset, coords in zip(tilerange, tile.availCoords):
-            rowidx = rowbase + offset
-            coverMatrix[rowidx][n] = 1
-            for pair in coords:
-                colidx = board.index(pair) + len(tiles)
-                coverMatrix[rowidx][colidx] = 1
-    # create a name row
-    namerow = ['B'+`name` for name in range(len(tiles))]
-    namerow += ['N'+`pair[0]`+'_'+`pair[1]` for pair in board]
-    coverMatrix = [namerow] + coverMatrix
+    if filename == 'partial_cross':
+        partcnt = 0
+        tsets = []
+        psets = []
+        for comb in itertools.combinations(bset, 9):
+            tsets.append(list(comb))
+            ptmp = []
+            for item in comb:
+                idx = bset.index(item)
+                ptmp.append(bpatterns[idx])
+            psets.append(ptmp)
+    else:
+        tsets = [bset]
+        psets = [bpatterns]
 
-    indepSol = []
-    mat = dlx.ExactCover(coverMatrix)
-    solutions = mat.solve()
-    if not next(solutions, False):
-        print '---- No available solution ----'
-    solcnt = 0
-    for solution in solutions:
-        match = patternmatch(solution, tiles, board, origPuzzle.bdpattern)
-        if not match:
-            continue
-        graph = graphic.Graph(bdrows, bdcols, solution)
-        newsol = graph.gen()
-        newsolFR = fliprot(newsol)
-        isIndep = True
-        for nsol in newsolFR:
-            for _ in range(4):
-                if nsol in indepSol:
-                    isIndep = False
-                    break
-                # rotate solution matrix 90 degrees clockwise
-                nsol = [list(r) for r in zip(*nsol[::-1])]
-        if isIndep:
-            indepSol.append(newsol)
-            solcnt += 1
-            maxscale = max([max(m) for m in newsol])
-            print 'Solution:', newsol
+    for tset, pset in zip(tsets, psets):
+        tiles = [puzzle.Tile(b, p, FLIP, ROTATE) for b, p in zip(tset, pset)]
+        rows = 0
+        cols = 0
+        for tile in tiles:
+            # find out all the possible tile placements
+            tile.place(board)
+            rows += len(tile.availCoords)
             print '\n'
-            picname = outputpath + '/' + str(solcnt) + '.png'
-            savepic(newsol, maxscale, picname)
-    print 'found', solcnt, 'independent solutions'
-    print mat.num_searches, 'searches'
+            print '\n'
+        cols = len(tiles) + len(board)
+        coverMatrix = [[0] * cols for i in range(rows)]
+        for tile in tiles:
+            n = tiles.index(tile)
+            rowbase = 0
+            for i in range(n):
+                rowbase += len(tiles[i].availCoords)
+            tilerange = range(len(tile.availCoords))
+            for offset, coords in zip(tilerange, tile.availCoords):
+                rowidx = rowbase + offset
+                coverMatrix[rowidx][n] = 1
+                for pair in coords:
+                    colidx = board.index(pair) + len(tiles)
+                    coverMatrix[rowidx][colidx] = 1
+        # create a name row
+        namerow = ['B'+`name` for name in range(len(tiles))]
+        namerow += ['N'+`pair[0]`+'_'+`pair[1]` for pair in board]
+        coverMatrix = [namerow] + coverMatrix
+
+        indepSol = []
+        mat = dlx.ExactCover(coverMatrix)
+        solutions = mat.solve()
+        if not next(solutions, False):
+            print '---- No available solution ----'
+        solcnt = 0
+        for solution in solutions:
+            match = patternmatch(solution, tiles, board, origPuzzle.bdpattern)
+            if not match:
+                continue
+            graph = graphic.Graph(bdrows, bdcols, solution)
+            newsol = graph.gen()
+            newsolFR = fliprot(newsol)
+            isIndep = True
+            for nsol in newsolFR:
+                for _ in range(4):
+                    if nsol in indepSol:
+                        isIndep = False
+                        break
+                    # rotate solution matrix 90 degrees clockwise
+                    nsol = [list(r) for r in zip(*nsol[::-1])]
+            if isIndep:
+                indepSol.append(newsol)
+                solcnt += 1
+                maxscale = max([max(m) for m in newsol])
+                print 'Solution:', newsol
+                print '\n'
+                picname = outputpath + '/' + str(solcnt) + '.png'
+                savepic(newsol, maxscale, picname)
+        if filename == 'partial_cross':
+            partcnt += solcnt
+    if filename == 'partial_cross':
+        print 'found', partcnt, 'independent solutions'
+    else:
+        print 'found', solcnt, 'independent solutions'
+    #print mat.num_searches, 'searches'
